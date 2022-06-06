@@ -1,0 +1,839 @@
+\documentclass{article}
+
+
+% if you need to pass options to natbib, use, e.g.:
+%     \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading neurips_2022
+
+
+% ready for submission
+% \usepackage{neurips_2022}
+
+
+% to compile a preprint version, e.g., for submission to arXiv, add add the
+% [preprint] option:
+\usepackage[preprint]{neurips_2022}
+
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+%     \usepackage[final]{neurips_2022}
+
+
+% to avoid loading the natbib package, add option nonatbib:
+%    \usepackage[nonatbib]{neurips_2022}
+
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{xcolor}         % colors
+\usepackage{graphicx}
+\usepackage{subcaption}
+
+
+\title{CSE 151B Project Final Report}
+
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to LaTeX to determine where to break the
+% lines. Using \AND forces a line break at that point. So, if LaTeX puts 3 of 4
+% authors names on the first line, and the last on the second line, try using
+% \AND instead of \And before the third author name.
+
+
+\author{%
+  Haitong Chen\\
+  \texttt{hac020@ucsd.edu} \\
+  \And
+  Michael Chen\\
+  \texttt{mic012@ucsd.edu} \\
+  \And
+  Sky Li\\
+  \texttt{yul055@ucsd.edu} \\
+  \And
+  Yining Gu\\
+  \texttt{yig019@ucsd.edu}
+  % examples of more authors
+  % \And
+  % Coauthor \\
+  % Affiliation \\
+  % Address \\
+  % \texttt{email} \\
+  % \AND
+  % Coauthor \\
+  % Affiliation \\
+  % Address \\
+  % \texttt{email} \\
+  % \And
+  % Coauthor \\
+  % Affiliation \\
+  % Address \\
+  % \texttt{email} \\
+  % \And
+  % Coauthor \\
+  % Affiliation \\
+  % Address \\
+  % \texttt{email} \\
+}
+
+
+\begin{document}
+
+
+\maketitle
+
+
+% \begin{abstract}
+%   The abstract paragraph should be indented \nicefrac{1}{2}~inch (3~picas) on
+%   both the left- and right-hand margins. Use 10~point type, with a vertical
+%   spacing (leading) of 11~points.  The word \textbf{Abstract} must be centered,
+%   bold, and in point size 12. Two line spaces precede the abstract. The abstract
+%   must be limited to one paragraph.
+% \end{abstract}
+
+
+\section{Task description and background}
+
+
+\subsection{}
+
+% Describe in your own words what the deep learning task is and
+% why it is important. Provide some real-world examples where successfully solving this
+% task can have great impact on our daily life and the society.
+
+Our task is to give a reliable prediction of the positions of a tracked Autonomous Vehicles (AV) 6 seconds into the future, given an initial 5-second observation of its trajectory, taking into account for the complex movement of traffic agents around the AV, such as cars, cyclists, and pedestrians.
+
+\newline
+
+As AV is welcomed by more and more people, the task of trajectory prediction becomes more and more important for its real-world impact:
+
+\begin{itemize}
+\item
+Driving safety: a reliable prediction can help the AV make better decisions even when facing complex traffic conditions like random obstacles, moving pedestrians, vehicle traffics, etc. Good predictions can help avoid those dangers by sensing them earlier.
+
+\item
+Route planning: a good prediction of the traffic condition can lead to a better route plan by taking into account the future traffic instead of purely the real-time conditions. One example can be planning a faster route that might be longer in distance but will be having fewer traffic.
+    
+\end{itemize}
+
+As the importance being discussed above, while this task is an important topic in solving the forecasting problem in the academia, successfully solving this problem will have a positive impact in the society and people's daily lives. Some real-world examples are as below:
+
+\begin{itemize}
+\item
+Safety: When sensor on a 40mph AV saw a kid falling on its 6s future trajectory, it will be able to break immediately or dodge to avoid accident from happening.
+
+\item
+Convenience: On a crossroads, if the AV sense a huge traffic at the next traffic lights that it will be driving to, it can make a decision of going around and save time for passengers.
+
+\item
+Social Impact: Successfully solving this task gives pedestrians, cyclists and other drivers safe feelings of having AV on the road and wouldn't worry about getting hits on the roads.
+    
+\end{itemize}
+
+
+
+
+\subsection{}
+
+% Use Google Scholar or other internet resources to research on this
+% task. What type of methods have been proposed before in the literature? Include some
+% references and discuss their ideas in a few sentences. How do these ideas relate to or
+% differ from your own ideas. You can use Bibtex to manage your bibliography
+
+\item \textit{Computer Vision for Autonomous Vehicles: Problems, Datasets and State of the Art} by Joel Janai, Fatma Güney, Aseem Behl and Andreas Geiger talks about computer vision application in capturing road conditions for prediction of trajectory. His paper digs into the topics of 'recognition, reconstruction, motion estimation, tracking, scene understanding, and end-to-end learning for autonomous driving'. (https://www.nowpublishers.com/article/Details/CGV-079)
+\item \textit{Planning and Decision-Making for Autonomous Vehicles} by Wilko Schwarting, Javier Alonso-Mora and Daniela Rus1 discusses some challenges and trend of the current autonomous driving industry. They proposed the use of Neural Network-based Perception Systems on motion planning. Also they introduced Game-Theoretic Approaches and Probabilistic Approach in searching for best decision under certain circumstances.
+(http://pdf.xuebalib.com:1262/3rhl2iRxzAso.pdf)
+
+
+\subsection{}
+
+% Define the input and output in mathematical language and formulate
+% your prediction task as an optimization problem. From the mathematically abstraction,
+% do you think your model can potentially solve other tasks beyond this project?
+% If so, list some examples and explain your rationale.
+
+We are given a large dataset to train our prediction model. Let $(x^t_i, y^t_i)$ denote the observed traffic during time $t$ in the $i^th$ trajectory. The numbers of trajectories depend on the cities where we extract the data from. Given a sequence $\{(x^t_i, y^t_i)\}$ of observed traffic data, $t \in [0, 50]$, where we have $5$ seconds and data is given every $0.1$ second; $i \in [1, m]$, where m is the number of trajectories for each city, also known as scene. Define the dataset as $S$, where $S = \{(x^t_i, y^t_i)\}^N$, where $(x^t_i, y^t_i)$ are the data points, and $N$ denote the different cities (scenes). In this case, according to the data given, $N \in [1, 6]$ since we have data from $6$ cities.
+
+We define the model class as $f((x^t_i, y^t_i) | w, b)$, and the loss function as $L(y^t_i, \hat{y}^t_i) = RMSE = \sqrt{\frac{1}{n}\Sigma_{i=1}^{n}{({y^t_i - \hat{y}^t_i})^2}}$. Our task is to predict the future trajectory of the AV. Say our prediction data is $ \hat{y^t_i}$, where $t$ maps the time of $6$ seconds, and $i$ maps the positions. Our goal, learning objective, is to train a good model that makes good prediction, so that we get $argmin_{w, b}\sum^N_iL(y^t_i,  \hat{y}^t_i) f((x^t_i, y^t_i) | w, b))$.
+
+From the mathematical abstraction, when used correctly, this model can potentially solve various types of forecasting problems as long as the input data can be represented as coordinate points of two variables.
+
+Besides this project, the model can solve other potential tasks. One of the example is predicting index in economy include but not limit to CPI, interest rate and unemployment rate etc. Policy makes and regular investors can make decisions regarding the financial markets and the society in general on time with the forecast data. Another application is in medical field, where we could forecast the spread of current Covid-19 disease and distribute more vaccination and create better medical products to prevent further possible spread.
+
+
+\section{Exploratory Data Analysis}
+
+
+\subsection{}
+
+% Run the provided Jupyter notebook for loading the data. Describe
+% the details of this dataset. Your description should answer the following questions:
+% • what is the provided training and test data size?
+% • how many dimensions of inputs/outputs in the raw data?
+% • what are the meanings of these input/output dimensions?
+% • what does one data sample looks like? Visualize it.
+
+
+\begin{itemize}
+    \item 
+    The training and test data size of different cities are captured in the table. See Table ~\ref{data-table}.
+
+    \begin{table}
+        \caption{Data size}
+        \label{data-table}
+        \centering
+        \begin{tabular}{lll}
+            \toprule
+            \cmidrule(r){1-2}
+            City            & Train data size     & Test data size \\
+            \midrule
+            Austin          & 43041               & 6325 \\
+            Miami           & 55029               & 7971 \\
+            Pittsburgh      & 43544               & 6361 \\
+            Dearborn        & 24465               & 3671 \\
+            Washington-DC   & 25744               & 3829 \\
+            Palo-alto       & 11993               & 1686
+            \bottomrule
+        \end{tabular}
+    \end{table}
+    
+    
+    
+    \item dimensions of inputs/outputs: each one data point represents the position at a certain 0.1 second time step in one of the trajectories in one of the cities. For each trajectory, the input dimension is $50 * 2$, where $50$ denotes the $50$ $0.1$ second in $5$ seconds, and $2$ denotes the two dimension of the position, $x$ and $y$. The output dimension is the $60 * 2$, where $60$ denotes the $60$ $0.1$ second in $6$ seconds, and $2$ denotes the two dimension of the position, $x$ and $y$.
+    
+    
+    
+    
+\end{itemize}
+
+
+\subsection{}
+
+% Perform statistical analysis to understand the properties of the
+% data. Your analysis should at least answer the following questions.
+% • what is the distribution of input positions for all agents (hint: use heatmap)
+% • what is the distribution of output positions for all agents (hint: use heatmap)
+% • what are the distributions of positions for different cities?
+
+
+    \begin{figure}
+        \begin{subfigure}{0.5\textwidth}
+        \includegraphics[scale=0.4]{all_in.png}
+        \caption{Input distribution for all agents.}
+        \label{all_input_distribution}
+        \end{subfigure}
+        ~
+        \begin{subfigure}{0.5\textwidth}
+        \includegraphics[scale=0.4]{all_out.png}
+        \caption{Output distribution for all agents.}
+        \label{all_output_distribution}
+        \end{subfigure}
+        
+        \caption{Input and output distribution for all agents.}
+    \end{figure}
+    
+    \item distribution of input positions for all agents
+    \newline
+    input of all agents: See Figure ~\ref{all_input_distribution}
+    
+    \item distribution of the output position for all agents
+    \newline
+    output of all agents: See Figure ~\ref{all_output_distribution}
+    
+    \item distributions of positions for different cities
+    \newline
+    Distributions of the input position for different cities:
+    
+    \newline
+    input of Austin: See Figure ~\ref{austin_input_distribution}
+    \newline
+    output of Austin: See Figure ~\ref{austin_output_distribution}
+    \begin{figure}[h]
+        \begin{subfigure}{0.5\textwidth}
+        \includegraphics[scale=0.4]{austin_in.png}
+        \caption{Austin input distribution.}
+        \label{austin_input_distribution}
+        \end{subfigure}
+        ~
+        \begin{subfigure}{0.5\textwidth}
+        \includegraphics[scale=0.4]{austin_out.png}
+        \caption{Austin output distribution.}
+        \label{austin_output_distribution}
+        \end{subfigure}
+        
+        \caption{Input and output distribution for Austin.}
+    \end{figure}
+    
+    
+    \newline
+    input of Miami: See Figure ~\ref{miami_input_distribution}
+    \newline
+    output of Miami: See Figure ~\ref{miami_output_distribution}
+    \begin{figure}
+        \begin{subfigure}{0.5\textwidth}
+        \includegraphics[scale=0.4]{miami_in.png}
+        \caption{Miami input distribution.}
+        \label{miami_input_distribution}
+        \end{subfigure}
+        ~
+        \begin{subfigure}{0.5\textwidth}
+        \includegraphics[scale=0.4]{miami_out.png}
+        \caption{Miami output distribution.}
+        \label{miami_output_distribution}
+        \end{subfigure}
+        
+        \caption{Input and output distribution for Miami.}
+        
+        \begin{subfigure}{0.5\textwidth}
+        \vspace{0.1mm}
+        \includegraphics[scale=0.4]{pitts_in.png}
+        \caption{Pittsburgh input distribution.}
+        \label{pitts_input_distribution}
+        \end{subfigure}
+        ~
+        \begin{subfigure}{0.5\textwidth}
+        \includegraphics[scale=0.4]{pitts_out.png}
+        \caption{Pittsburgh output distribution.}
+        \label{pitts_output_distribution}
+        \end{subfigure}
+        
+        \caption{Input and output distribution for Pittsburgh.}
+        
+        \begin{subfigure}{0.5\textwidth}
+        \includegraphics[scale=0.4]{db_in.png}
+        \caption{Dearborn input distribution.}
+        \label{db_input_distribution}
+        \end{subfigure}
+        ~
+        \begin{subfigure}{0.5\textwidth}
+        \includegraphics[scale=0.4]{db_out.png}
+        \caption{Dearborn output distribution.}
+        \label{db_output_distribution}
+        \end{subfigure}
+        
+        \caption{Input and output distribution for Dearborn.}
+    \end{figure}
+    
+    
+    \newline
+    input of Pittsburgh: See Figure ~\ref{pitts_input_distribution}
+    \newline
+    output of Pittsburgh: See Figure ~\ref{pitts_output_distribution}
+    
+    
+    \newline
+    input of Dearborn: See Figure ~\ref{db_input_distribution}
+    \newline
+    output of Dearborn: See Figure ~\ref{db_output_distribution}
+    
+    
+    
+    \newline
+    input of Washington-DC: See Figure ~\ref{dc_input_distribution}
+    \newline
+    output of Washington-DC: See Figure ~\ref{dc_output_distribution}
+    \begin{figure}
+        \begin{subfigure}{0.5\textwidth}
+        \includegraphics[scale=0.4]{dc_in.png}
+        \caption{Washington-DC input distribution.}
+        \label{dc_input_distribution}
+        \end{subfigure}
+        ~
+        \begin{subfigure}{0.5\textwidth}
+        \includegraphics[scale=0.4]{dc_out.png}
+        \caption{Washington-DC output distribution.}
+        \label{dc_output_distribution}
+        \end{subfigure}
+        
+        \caption{Input and output distribution for Washington-DC.}
+    \end{figure}
+    
+    
+    \newline
+    input of Palo-alto: See Figure ~\ref{pa_input_distribution}
+    \newline
+    output of Palo-alto: See Figure ~\ref{pa_output_distribution}
+    \begin{figure}
+        \begin{subfigure}{0.5\textwidth}
+        \includegraphics[scale=0.4]{pa_in.png}
+        \caption{Palo-alto input distribution.}
+        \label{pa_input_distribution}
+        \end{subfigure}
+        ~
+        \begin{subfigure}{0.5\textwidth}
+        \includegraphics[scale=0.4]{pa_out.png}
+        \caption{Palo-alto output distribution.}
+        \label{pa_output_distribution}
+        \end{subfigure}
+        
+        \caption{Input and output distribution for Palo-alto.}
+    \end{figure}
+
+\subsection{}
+
+% Process the data to prepare for the prediction task. Describe the
+% steps that you have taken to process the data. Your description should at least answer the
+% following questions.
+% • How did you split the training and validation data? What is the size of your train
+% and validation dataset?
+% • Did you use any feature engineering? If yes, how did you design your features?
+% Explain your rationale.
+% • How did you normalize your data? Why did you choose this normalization scheme?
+% • Did you use the city information provided in the dataset. If yes, how did you exploit
+% this information.
+
+\begin{itemize}
+
+\item How did you split the training and validation data? What is the size of your train and validation dataset?
+\newline
+Because a large number of training data are provided, we split the training and validation data in the ratio of 10:1. Say the input size is $s$, then the training data size is $\frac{10}{11}s$ and the validation data size is $\frac{1}{11}s$.
+\newline
+Another future work that we can try to optimize our model is to adjust the ratio of the training and validation data size. Using the classic 5-Fold Cross Validation as a baseline, we can try to find a good ratio to separate the data so that we can train and test more efficiently and precisely.
+
+\item Did you use any feature engineering? If yes, how did you design your features? Explain your rationale.
+\newline
+We have not yet incorporated feature engineering in this submission, in which we have extensively relied on the interaction of the layers and network. However, factoring in some more feature engineering is in our plan for the future work when we want to optimize this model even more. Having picked good features and incorporated good feature engineering vectors as input, the model is likely to perform better for the presence of insights and history.
+
+\item Did you use the city information provided in the dataset. If yes, how did you exploit this information.
+\newline
+We didn't use the city information, but we merge all datasets into a big training set.
+
+\end{itemize}
+
+
+\section{Machine Learning model}
+
+
+\subsection{}
+
+% Start with a machine learning model and answer the following
+% questions. Pick any model that you are comfortable with, such as linear regression.
+% • What are the input output features that you end up using for prediction with simple
+% machine learning models?
+% • Which model class did you pick? What is your loss function?
+
+\begin{itemize}
+    \item What are the input output features that you end up using for prediction with simple machine learning models?
+    \newline
+    Input is 50 timestamps of positions and output is 60 Timestamps trajectory.
+    \item Which model class did you pick? What is your loss function?
+    \newline
+    VAR is the model class and MSE is the loss function
+    
+    
+\end{itemize}
+
+
+\subsubsection{}
+
+% Describe the deep learning pipeline for your prediction task and
+% answer the following questions.
+% • What are the input output features that you end up using for prediction with deep
+% learning models?
+% • What is your model architecture and loss function? If you have multiple alternatives,
+% discuss your ideas and observations.
+
+\begin{itemize}
+    \item What are the input output features that you end up using for prediction with deep learning models?
+    \newline
+    Input is 50 timestamps of positions and output is 60 Timestamps trajectory
+    
+    \item What is your model architecture and loss function? If you have multiple alternatives, discuss your ideas and observations.
+    \newline
+    The model consists of the LSTM and MLP layers. The loss function is MSE. Hyperparameters are tuned using Grid Search. We have experiment with 1) transformer model which suffers from slow training with our limited computation resources; 2) vector autoregression which suffers from failing to learn even basic physics rules; and 3) recursive LSTM which suffers from error propagation.
+    \begin{center}
+    \includegraphics[scale = 0.3]{params.jpg}
+    \end{center}
+    
+    
+\end{itemize}
+
+
+\subsection{}
+
+% Describe all the models you have tried to make predictions. You
+% should always start with simple deep learning models (such as Multi-layer Perceptron)
+% and gradually increase the complexity of your model.
+% • Use an itemized list to briefly summarize each of the models, their architecture, and
+% parameters, and provide the correct reference if possible.
+% • If you end up designing your own model architecture, include a picture/sketch of
+% your model architecture. Explain why you choose such a model.
+% • Describe different regularization techniques that you have used such as batch-norm,
+% dropout, and max-pooling in your model.
+% You can also use mathematical equations to explain your prediction logic.
+
+\begin{itemize}
+    \item Use an itemized list to briefly summarize each of the models, their architecture, and parameters, and provide the correct reference if possible.
+    \newline
+    We have experimented with 4 different models.
+    \begin{itemize}
+        \item Model 1: Temporal Fusion Transformer
+        \begin{itemize}
+            \item Summary: This is based on a paper published on 2019, where an attention based model is purposed and outperforms many previous model in time forecasting.
+            \item Architecture: The model consists of a variable selection layer to select most salient features;
+                a static covariant encoder with LSTM encoder-decoder architecture;
+                a static enrichment layer with GRN;
+                a temporal self attention layer that considered all outputs from all time stemp all at once;
+                and finally, a GRN and dense layer to output.
+            \item Parameters: default parameters are used as suggested by the paper: 500 epochs, 2 LSTM layer, 64 hidden nodes, 3-headed attention layers and 32 batch size.
+            \item Reference: Lim, B., Arik, S. O., Loeff, N., & Pfister, T. (2019). Temporal fusion transformers for interpretable multi-horizon time series forecasting. arXiv preprint arXiv:1912.09363.
+        \end{itemize}
+        
+        \item Model 2: Vector Autoregression (VAR)
+        \begin{itemize}
+            \item Summary: This is a statistical regression method to produce the future 60 data points.
+            \item Architecture: VAR generalize the univariate autoregression models for all its dimensions. For each variable in the vectors, an equation is used to model the variable's evolution over time using past value (lag).
+            \item Parameters: default parameters / NA
+            \item Reference: Toda, H. (1991). Vector autoregression and causality (Doctoral dissertation, Yale University).
+        \end{itemize}
+        
+        \item Model 3: LSTM, recursive
+        \begin{itemize}
+            \item Summary: This model uses LSTM layers to produce a single future output based on previous inputs. Recursively, it can produce all 60 trajectories.
+            \item Architecture: LSTM layer + Dense layer. The results are computed recursively.
+            \item Parameters: the model consists of 1 LSTM with 4 hidden units, and 1 dense layer with 2 hidden units. SGD is used, Adam optimizer is used.
+            \item Reference: N/A
+        \end{itemize}
+        
+        \item Model 4: LSTM + MLP
+        \begin{itemize}
+            \item Summary: The model consists of multiple LSTM and MLP layers. The input is 50 timestamps of positions and output is 60 timestamps. Compared to the previous model of recursive LSTM, we predicted the output at the same time. The average training cost turned out to be 2218s per epoch.
+            \item Architecture: a stacked LSTM which fed into a multi layer perception.
+            \item Parameters: The stacked LSTM consists of 3 LSTM layer each with 256 units; the MLP consists of 4 dense layers, stimulating an encoder architecture with 512, 256, 128 and 120 layers respectively.
+                \begin{itemize}
+                    \item optimizer: Adam
+                    \item lr: 0.00001. 
+                    \item Loss function: MSE 
+                    \item batch size: 1 (SGD)
+                    \item epoch: 30
+                \end{itemize}  
+            \item Reference: 
+            \newline
+            https://pytorch.org/docs/stable/generated/torch.nn.LSTM.html, https://pytorch.org/docs/stable/nn.html
+        \end{itemize}
+    \end{itemize}
+    
+    \item If you end up designing your own model architecture, include a picture/sketch of your model architecture. Explain why you choose such a model.
+    \newline
+    \begin{center}
+        \includegraphics[scale = 0.5]{lstm.JPG}
+    \end{center}
+    \newline
+    We chose this model because multiple layers of LSTM and MLP make up a complex model that has more parameters to help us train better on our input and make more accurate predictions. 
+    
+    \item Describe different regularization techniques that you have used such as batch-norm, dropout, and max-pooling in your model.
+    \newline
+    We used sample wise norm, which was to normalize each sample's data points to the origin (starting point) so we have relative positions instead. The data therefore, were transformed to float between 0 and 1. The advantage was that we could prevent gradient explosion problem.
+    
+    
+    
+\end{itemize}
+
+
+\section{Experiment design and results}
+
+
+\subsection{}
+
+% Describe how you set up the training and testing design for deep
+% learning. Answer the following questions:
+% • What computational platform/GPU did you use for training and testing?
+% • What is your optimizer? How did you tune your learning rate, learning rate decay,
+% momentum and other parameters?
+% • How did you make multistep (30 step) prediction for each target agent?
+% • How did you utilize the city information?
+% • How many epoch did you use? What is your batch-size? How long does it take to
+% train your model for one epoch (going through the entire training data set once)?
+% Explain why you made these design choices. Was it motivated by your past experience?
+% Or was it due to the limitation from your computational platform? You are welcome to
+% use screenshots or provide code snippets to explain your design.
+
+\begin{itemize}
+    \item What computational platform/GPU did you use for training and testing?
+    \newline
+    GPU: RTX2070 and GTX1080ti
+    
+    \item What is your optimizer? How did you tune your learning rate, learning rate decay, momentum and other parameters?
+    \newline
+    Adam. Grid search. Learning rate decay, momentum and other parameters are set to default parameters of Adam optimizer and / or handled by the Adam optimizer. The following learning rates are tested before which best performing learning rate of 0.000001 is selected ${0.3, 0.0003, 0.00003, 0.0000003, 0.0000001}$
+    
+    \item How did you make multistep (30 step) prediction for each target agent?
+    \newline
+    By extrapolation. The predicted coordinates of the previous step is used as input for future prediction.
+    
+    \item How did you utilize the city information?
+    \newline
+    The city information is not considered as part of the input. All cities data are integrated into one dataset with large number of samples.
+    
+    \item How many epoch did you use? What is your batch-size? How long does it take to train your model for one epoch (going through the entire training data set once)?
+    \newline
+    100 epoch were chosen as per the constrain of our computational resources available. We used SGD with 1 batch-size. It was trained in 7 mines for each epoch, and 700 mines total.
+    
+    \item Explain why you made these design choices. Was it motivated by your past experience? Or was it due to the limitation from your computational platform? You are welcome to use screenshots or provide code snippets to explain your design.
+    \newline
+    Because we need uses extrapolation in generating outputs, minimizing error propagation plays a large role in our model design. To do so we decide to use SGD instead of batch gradient descent as it tends to better reach minima despite risking worse generalization. This is chosen also because we have a relatively large dataset. For number of epochs, we chose 100 because 50-100 epochs is commonly used in deep learning training. The reason is that below 50 epochs could cause under fitting while above 100 could cause overfitting and produce bad generation result. We experiment with 300 epochs, and observes an increase in testing loss after ~200 epochs.
+    
+\end{itemize}
+
+
+\subsection{}
+
+% Select a few representative models of yours and report the following
+% results by comparing different models.
+% • Use a table to compare the prediction performances of different feature and model
+% designs. What conclusions can you draw from this table.
+% • Provide an estimate of training time (in flops or minutes) for different models. What
+% did you do to improve the training speed?
+% • Count and report the number of parameters in different models.
+
+We have selected four of our models as representatives to discuss here.
+Model 1: Temporal Fusion Transformer; Model 2: Vector Autoregression (VAR); Model 3: LSTM, recursive; Model 4: LSTM + MLP. The details are compared below.
+
+\begin{itemize}
+    \item Use a table to compare the prediction performances of different feature and model designs. What conclusions can you draw from this table. See Table ~\ref{prediction-table}.
+    \newline
+    The 4th model, which is our final model is the best performed one regarding training accuracy and time. We can therefore conclude that multiple layers of two different classes: LSTM and MLP is effective in increasing our prediction accuracy, while it kept training time relatively low compared to other model due to our structure and data normalization.
+    
+    \begin{table}
+        \caption{Prediction performances of different models}
+        \label{prediction-table}
+        \centering
+        \begin{tabular}{lll}
+            \toprule
+            \cmidrule(r){1-2}
+            Model & MSE score  &Problem \\
+            \midrule
+            1     & N/A        & \begin{tabular}{l} 1) Computationally expensive. \\
+            2) If the learning rate is too large, the result will diverge, \\
+            if the learning rate is too small, the training process is too slow \\\end{tabular} \\
+            
+            2     & 48.29499   & \begin{tabular}{l} 1) Sparkly large loss data points increases the average loss dramatically. \\
+            2) No learning, defy basic physics \\\end{tabular} \\
+            
+            3     & 407.31436  & Error propagation \\
+            4     & 19.09141   & N/A, can still be improved \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+    
+    
+    \item Provide an estimate of training time (in flops or minutes) for different models. What did you do to improve the training speed?
+    \newline
+    Training time for TFT: NA (we never finish one epoch to print the time per epoch)
+    \\Training time for VAR: NA (statistical model do not need training)
+    \\Training time for recursive LSTM: 46s/epoch (single trajectory output) 2760s/sample (all 60 trajectories)
+    \\Training time for LSTM+MLP: 2218s/epoch
+    \\Strategy used: Nvidia RTX 20XX and newer GPU is equipped with tensor core which speed up the training significantly. However it's only designed/capable for doing 16bit matrix manipulation. Therefore we converted all the data to 16bit half precision fp to utilize the tensor cores.
+    
+    \item Count and report the number of parameters in different models.
+    \newline
+    \begin{table}
+        \caption{LSTM recursive Parameters}
+        \label{data-table2}
+        \centering
+        \begin{tabular}{ll}
+            \toprule
+            \cmidrule(r){1-2}
+           Modules            & Parameters      \\
+            \midrule
+            rnn.weight_ih_l0          & 80              \\
+            rnn.weight_hh_l0           & 400             \\
+            rnn.bias_ih_l0      & 40       \\
+            rnn.bias_hh_l0     & 40             \\
+            fc.weight   & 20               \\
+            fc.bias       & 2             \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+    \\Number of parameters for recursive LSTM: 582 (See table ~\ref{data-table2})
+    
+
+    \begin{table}
+        \caption{Number of parameters for LSTM+MLP}
+        \label{lstm_mlp_params}
+        \centering
+        \begin{tabular}{ll}
+            \toprule
+            \cmidrule(r){1-2}
+            Modules        & Parameters \\
+            \midrule
+            encoder.weight_ih_l0 &    2048    \\
+            encoder.weight_hh_l0 &   262144   \\
+            encoder.bias_ih_l0  &    1024    \\
+            encoder.bias_hh_l0  &    1024    \\
+            encoder.weight_ih_l1 &   262144   \\
+            encoder.weight_hh_l1 &   262144   \\
+            encoder.bias_ih_l1  &    1024    \\
+            encoder.bias_hh_l1  &    1024    \\
+            encoder.weight_ih_l2 &   262144   \\
+            encoder.weight_hh_l2 &   262144   \\
+            encoder.bias_ih_l2  &    1024    \\
+            encoder.bias_hh_l2  &    1024    \\
+            mlp.layer0.weight   &   131072   \\
+            mlp.layer0.bias    &    512     \\
+            mlp.layer1.weight   &   131072   \\
+            mlp.layer1.bias    &    256     \\
+            mlp.layer2.weight   &   32768    \\
+            mlp.layer2.bias    &    128     \\
+            mlp.layer3.weight   &   15360    \\
+            mlp.layer3.bias    &    120     \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+    \\Number of parameters for LSTM+MLP: 1630200. (See Table ~\ref{lstm_mlp_params})
+
+    
+\end{itemize}
+
+
+\subsection{}
+
+% Play with different designs of your features and models. Report
+% the following for your best-performing model design:
+% • Visualize the training/validation loss (MSE) value over training steps (You should
+% expect to see an exponential decay).
+% • Randomly sample a few training samples after the training has finished. Visualize
+% the ground truth and your predictions.
+% • Your current ranking on the leaderboard and your final test MSE.
+
+\begin{itemize}
+    \item Visualize the training/validation loss (MSE) value over training steps (You should expect to see an exponential decay). See figure ~\ref{MSE_over_steps}.
+    \newline
+    \begin{figure}
+        \centering
+        \includegraphics[scale = 0.5]{loss_over_time.png}
+        \caption{MSE over training steps.}
+        \label{MSE_over_steps}
+    \end{figure}
+    
+    \item Randomly sample a few training samples after the training has finished. Visualize the ground truth and your predictions. See figures ~\ref{training_samples}
+    \newline
+    \begin{figure}
+        \begin{subfigure}{0.5\textwidth}
+        \includegraphics[scale = 0.5]{1index.png}
+        \end{subfigure}
+        ~
+        \begin{subfigure}{0.5\textwidth}
+        \includegraphics[scale = 0.5]{2index.png}
+        \end{subfigure}
+        ~
+        \begin{subfigure}{0.5\textwidth}
+        \includegraphics[scale = 0.5]{7index.png}
+        \end{subfigure}
+        ~
+        \begin{subfigure}{0.5\textwidth}
+        \includegraphics[scale = 0.5]{6index.png}
+        \end{subfigure}
+        ~
+        \begin{subfigure}{0.5\textwidth}
+        \includegraphics[scale = 0.5]{5index.png}
+        \end{subfigure}
+        ~
+        \begin{subfigure}{0.5\textwidth}
+        \includegraphics[scale = 0.5]{4index.png}
+        \end{subfigure}
+        ~
+        \begin{subfigure}{0.5\textwidth}
+        \includegraphics[scale = 0.5]{3index.png}
+        \end{subfigure}
+        ~
+        \begin{subfigure}{0.5\textwidth}
+        \includegraphics[scale = 0.5]{8index.png}
+        \end{subfigure}
+        \caption{Training samples.}
+        \label{training_samples}
+    \end{figure}
+   
+    
+    \item Your current ranking on the leaderboard and your final test MSE.
+    \newline
+    Our current ranking : 8 (7 if excluded number 1).
+    \newline
+    Final test MSE: 19.09141
+    
+\end{itemize}
+
+
+
+\section{Discussion and future work}
+
+
+\subsection{}
+
+% Analyze the results and identify the lessons/issues that you have
+% learned so far. Briefly answering the following questions.
+% • What do you think is the most effective feature engineering strategy?
+% • What techniques (data visualization/model design/hyper-parameter tuning) did
+% you find most helpful in improving your ranking?
+% • What was your biggest bottleneck in this project?
+% • How would you advise a deep learning beginner in terms of designing deep learning
+% models for similar prediction tasks.
+% • If you had more resources, what other ideas would you like to explore?
+
+\begin{itemize}
+    \item What do you think is the most effective feature engineering strategy?
+    \newline
+    Since we haven't integrated feature engineering in our model training, we answer this question based on our empirical experience. Most of the time, people used the raw feature to perform feature engineering, like the velocity and position of the vehicles. However, the raw feature can also be further processed to train the model, like the square of velocity, the acceleration rate, the position relative to other agents, etc.
+    \newline
+    Sometime people also explore more features that don't look intuitive at the first glance, like the color of the vehicles, the weather, the model of the vehicles, the driving age of the drivers, etc (if can be obtained). Although those features can be obscure to the problem at first, it might turn out to be closely related and can bring out further interesting hypothesises.
+    
+    \item What techniques (data visualization/model design/hyper-parameter tuning) did you find most helpful in improving your ranking?
+    \newline
+    Speaking of the whole competition process, data visualization helps us improve our ranking the most. Although we have specifically made use of other techniques like different model design and tuning hyper-parameter at the end, visualizing the data helps us understand our models more.
+    \newline
+    By visualizing the loss over steps and the final predicted trajectory output, we have more intuitive ideas about how well our models are fitting the problems, and what aspects in our models that we can improve on. By constantly monitoring the data, we make progress constantly and can adjust anything that went wrong in a more timely and more efficient manner.
+    
+    \item What was your biggest bottleneck in this project?
+    \newline
+    The biggest bottleneck is to lower the rmse further given the limitation of time frame and equipment we have, and the caution to avoid overfitting.
+    
+    \item How would you advise a deep learning beginner in terms of designing deep learning models for similar prediction tasks.
+    \newline
+    Our suggestion is to always start from simple models and add more features/layers/designs based on the performance of each try. We started from very simple models just to get started and have an initial score. With the initial score, we can compare our model's performance with others', and we have better ideas of what techniques work and what doesn't work. We gradually add more designs to our existing models or switch to other models if we find better models that can be adapted.
+    
+    \item If you had more resources, what other ideas would you like to explore?
+    \newline
+    We will also like to try how to incorporate feature engineering with our model. Our current model doesn't involve feature engineering, but from what we can see from other scholar's claim, right feature engineering can be very helpful in forecasting problems.
+\end{itemize}
+
+
+\section*{References}
+
+{
+\small
+
+
+[1] Alexander, J.A.\ \& Mozer, M.C.\ (1995) Template-based algorithms for
+connectionist rule extraction. In G.\ Tesauro, D.S.\ Touretzky and T.K.\ Leen
+(eds.), {\it Advances in Neural Information Processing Systems 7},
+pp.\ 609--616. Cambridge, MA: MIT Press.
+
+
+[2] Bower, J.M.\ \& Beeman, D.\ (1995) {\it The Book of GENESIS: Exploring
+  Realistic Neural Models with the GEneral NEural SImulation System.}  New York:
+TELOS/Springer--Verlag.
+
+
+[3] Hasselmo, M.E., Schnell, E.\ \& Barkai, E.\ (1995) Dynamics of learning and
+recall at excitatory recurrent synapses and cholinergic modulation in rat
+hippocampal region CA3. {\it Journal of Neuroscience} {\bf 15}(7):5249-5262.}
+
+[4] Joel Janai, Fatma Güney, Aseem Behl, Andreas Geiger (2020) Computer Vision for Autonomous Vehicles: Problems, Datasets and State of the Art {\it Foundations and Trends® in Computer Graphics and Vision}
+
+
+[5] Wilko Schwarting, Javier Alonso-Mora, Daniela Rus1 (2018) Planning and Decision-Making for Autonomous Vehicles {\it Annual Review of Control, Robotics, and Autonomous Systems} 
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\end{document}
